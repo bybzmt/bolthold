@@ -2,13 +2,11 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-package bolthold_test
+package bolthold
 
 import (
 	"reflect"
 	"testing"
-
-	"github.com/timshannon/bolthold"
 )
 
 type Nested struct {
@@ -126,43 +124,43 @@ var nestedData = []Nested{
 var nestedTests = []test{
 	test{
 		name:   "Nested",
-		query:  bolthold.Where("L1.Name").Eq("Joe"),
+		query:  Where("L1.Name").Eq("Joe"),
 		result: []int{0},
 	},
 	test{
 		name:   "Embedded",
-		query:  bolthold.Where("Color").Eq("red"),
+		query:  Where("Color").Eq("red"),
 		result: []int{0, 1},
 	},
 	test{
 		name:   "Embedded Explicit",
-		query:  bolthold.Where("Embed.Color").Eq("red"),
+		query:  Where("Embed.Color").Eq("red"),
 		result: []int{0, 1},
 	},
 	test{
 		name:   "Nested Multiple Levels",
-		query:  bolthold.Where("L2.L3.Name").Eq("Joe"),
+		query:  Where("L2.L3.Name").Eq("Joe"),
 		result: []int{0, 3},
 	},
 	test{
 		name:   "Pointer",
-		query:  bolthold.Where("Pointer.Name").Eq("Jill"),
+		query:  Where("Pointer.Name").Eq("Jill"),
 		result: []int{1, 2, 3},
 	},
 	test{
 		name:   "Sort",
-		query:  bolthold.Where("Key").Ge(0).SortBy("L2.L3.Name"),
+		query:  Where("Key").Ge(0).SortBy("L2.L3.Name"),
 		result: []int{4, 1, 2, 0, 3},
 	},
 	test{
 		name:   "Sort On Pointer",
-		query:  bolthold.Where("Key").Ge(0).SortBy("Pointer.Name"),
+		query:  Where("Key").Ge(0).SortBy("Pointer.Name"),
 		result: []int{4, 1, 2, 0, 3},
 	},
 }
 
 func TestNested(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		for i := range nestedData {
 			err := store.Insert(nestedData[i].Key, nestedData[i])
 			if err != nil {

@@ -2,16 +2,14 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-package bolthold_test
+package bolthold
 
 import (
 	"fmt"
+	"github.com/boltdb/bolt"
 	"log"
 	"os"
 	"time"
-
-	"github.com/timshannon/bolthold"
-	bolt "go.etcd.io/bbolt"
 )
 
 type Item struct {
@@ -45,7 +43,7 @@ func Example() {
 	}
 
 	filename := tempfile()
-	store, err := bolthold.Open(filename, 0666, nil)
+	store, err := Open(filename, 0666, nil)
 	defer store.Close()
 	defer os.Remove(filename)
 
@@ -74,7 +72,7 @@ func Example() {
 	// Find all items in the blue category that have been created in the past hour
 	var result []Item
 
-	err = store.Find(&result, bolthold.Where("Category").Eq("blue").And("Created").Ge(time.Now().Add(-1*time.Hour)))
+	err = store.Find(&result, Where("Category").Eq("blue").And("Created").Ge(time.Now().Add(-1*time.Hour)))
 
 	if err != nil {
 		// handle error

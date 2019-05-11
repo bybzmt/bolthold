@@ -2,22 +2,20 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-package bolthold_test
+package bolthold
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/boltdb/bolt"
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/timshannon/bolthold"
-	bolt "go.etcd.io/bbolt"
 )
 
 func TestOpen(t *testing.T) {
 	filename := tempfile()
-	store, err := bolthold.Open(filename, 0666, nil)
+	store, err := Open(filename, 0666, nil)
 	if err != nil {
 		t.Fatalf("Error opening %s: %s", filename, err)
 	}
@@ -31,7 +29,7 @@ func TestOpen(t *testing.T) {
 }
 
 func TestBolt(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		b := store.Bolt()
 		if b == nil {
 			t.Fatalf("Bolt is null in bolthold")
@@ -45,7 +43,7 @@ func indexName(typeName, indexName string) []byte {
 }
 
 func TestRemoveIndex(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		insertTestData(t, store)
 		var item ItemTest
 
@@ -81,7 +79,7 @@ func TestRemoveIndex(t *testing.T) {
 }
 
 func TestReIndex(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		insertTestData(t, store)
 		var item ItemTest
 
@@ -122,7 +120,7 @@ func TestReIndex(t *testing.T) {
 }
 
 func TestIndexExists(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		insertTestData(t, store)
 		err := store.Bolt().View(func(tx *bolt.Tx) error {
 			if !store.IndexExists(tx, "ItemTest", "Category") {
@@ -141,7 +139,7 @@ func TestIndexExists(t *testing.T) {
 type ItemTestClone ItemTest
 
 func TestReIndexWithCopy(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		insertTestData(t, store)
 
 		var item ItemTestClone
@@ -169,7 +167,7 @@ func TestReIndexWithCopy(t *testing.T) {
 
 func TestAlternateEncoding(t *testing.T) {
 	filename := tempfile()
-	store, err := bolthold.Open(filename, 0666, &bolthold.Options{
+	store, err := Open(filename, 0666, &Options{
 		Encoder: json.Marshal,
 		Decoder: json.Unmarshal,
 	})
@@ -186,7 +184,7 @@ func TestAlternateEncoding(t *testing.T) {
 
 	var result []ItemTest
 
-	store.Find(&result, bolthold.Where(bolthold.Key).Eq(tData.Key))
+	store.Find(&result, Where(Key).Eq(tData.Key))
 
 	if len(result) != 1 {
 		if testing.Verbose() {
@@ -203,7 +201,7 @@ func TestAlternateEncoding(t *testing.T) {
 
 func TestGetUnknownType(t *testing.T) {
 	filename := tempfile()
-	store, err := bolthold.Open(filename, 0666, &bolthold.Options{
+	store, err := Open(filename, 0666, &Options{
 		Encoder: json.Marshal,
 		Decoder: json.Unmarshal,
 	})
@@ -220,7 +218,7 @@ func TestGetUnknownType(t *testing.T) {
 
 	var result test
 	err = store.Get("unknownKey", &result)
-	if err != bolthold.ErrNotFound {
+	if err != ErrNotFound {
 		t.Errorf("Expected error of type ErrNotFound, not %T", err)
 	}
 }
@@ -229,9 +227,9 @@ func TestGetUnknownType(t *testing.T) {
 
 // testWrap creates a temporary database for testing and closes and cleans it up when
 // completed.
-func testWrap(t *testing.T, tests func(store *bolthold.Store, t *testing.T)) {
+func testWrap(t *testing.T, tests func(store *Store, t *testing.T)) {
 	filename := tempfile()
-	store, err := bolthold.Open(filename, 0666, nil)
+	store, err := Open(filename, 0666, nil)
 	if err != nil {
 		t.Fatalf("Error opening %s: %s", filename, err)
 	}

@@ -6,9 +6,8 @@ package bolthold
 
 import (
 	"errors"
+	"github.com/boltdb/bolt"
 	"reflect"
-
-	bolt "go.etcd.io/bbolt"
 )
 
 // ErrKeyExists is the error returned when data is being Inserted for a Key that already exists

@@ -6,10 +6,9 @@ package bolthold
 
 import (
 	"bytes"
+	"github.com/boltdb/bolt"
 	"reflect"
 	"sort"
-
-	bolt "go.etcd.io/bbolt"
 )
 
 // BoltholdIndexTag is the struct tag used to define an a field as indexable for a bolthold

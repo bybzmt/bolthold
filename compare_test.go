@@ -2,7 +2,7 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-package bolthold_test
+package bolthold
 
 import (
 	"fmt"
@@ -10,8 +10,6 @@ import (
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/timshannon/bolthold"
 )
 
 type CItemTest struct {
@@ -31,11 +29,11 @@ func (i *ItemTest) Compare(other interface{}) (int, error) {
 		return 1, nil
 	}
 
-	return 0, &bolthold.ErrTypeMismatch{Value: i, Other: other}
+	return 0, &ErrTypeMismatch{Value: i, Other: other}
 }
 
 func TestFindWithComparer(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		data := []CItemTest{
 			CItemTest{
 				Inner: ItemTest{
@@ -74,7 +72,7 @@ func TestFindWithComparer(t *testing.T) {
 		}
 
 		var result []CItemTest
-		err := store.Find(&result, bolthold.Where("Inner").Gt(data[1].Inner))
+		err := store.Find(&result, Where("Inner").Gt(data[1].Inner))
 		if err != nil {
 			t.Fatalf("Error retriving data in comparer test: %s", err)
 		}
@@ -224,7 +222,7 @@ var allData = []All{
 }
 
 func TestFindWithBuiltinTypes(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		for i := range allData {
 			err := store.Insert(i, allData[i])
 			if err != nil {
@@ -241,7 +239,7 @@ func TestFindWithBuiltinTypes(t *testing.T) {
 
 				// equal
 				var result []All
-				err := store.Find(&result, bolthold.Where(to.Field(i).Name).Eq(curField))
+				err := store.Find(&result, Where(to.Field(i).Name).Eq(curField))
 				if err != nil {
 					t.Fatalf("Error finding equal result %s", err)
 				}
@@ -261,7 +259,7 @@ func TestFindWithBuiltinTypes(t *testing.T) {
 			t.Run(fmt.Sprintf("Builtin type %s greater than", to.Field(i).Name), func(t *testing.T) {
 				// gt
 				var result []All
-				err := store.Find(&result, bolthold.Where(to.Field(i).Name).Gt(curField))
+				err := store.Find(&result, Where(to.Field(i).Name).Gt(curField))
 				if err != nil {
 					t.Fatalf("Error finding equal result %s", err)
 				}
@@ -281,7 +279,7 @@ func TestFindWithBuiltinTypes(t *testing.T) {
 			t.Run(fmt.Sprintf("Builtin type %s less than", to.Field(i).Name), func(t *testing.T) {
 				// lt
 				var result []All
-				err := store.Find(&result, bolthold.Where(to.Field(i).Name).Lt(curField))
+				err := store.Find(&result, Where(to.Field(i).Name).Lt(curField))
 				if err != nil {
 					t.Fatalf("Error finding equal result %s", err)
 				}

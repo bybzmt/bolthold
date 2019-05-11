@@ -6,13 +6,12 @@ package bolthold
 
 import (
 	"fmt"
+	"github.com/boltdb/bolt"
 	"reflect"
 	"regexp"
 	"sort"
 	"strings"
 	"unicode"
-
-	bolt "go.etcd.io/bbolt"
 )
 
 const (

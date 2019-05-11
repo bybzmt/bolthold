@@ -2,17 +2,15 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-package bolthold_test
+package bolthold
 
 import (
 	"testing"
 	"time"
-
-	"github.com/timshannon/bolthold"
 )
 
 func TestGet(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:    "Test Name",

@@ -5,9 +5,8 @@
 package bolthold
 
 import (
+	"github.com/boltdb/bolt"
 	"reflect"
-
-	bolt "go.etcd.io/bbolt"
 )
 
 // Delete deletes a record from the bolthold, datatype just needs to be an example of the type stored so that

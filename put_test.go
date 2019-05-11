@@ -2,19 +2,17 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-package bolthold_test
+package bolthold
 
 import (
 	"fmt"
+	"github.com/boltdb/bolt"
 	"testing"
 	"time"
-
-	"github.com/timshannon/bolthold"
-	bolt "go.etcd.io/bbolt"
 )
 
 func TestInsert(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -44,15 +42,15 @@ func TestInsert(t *testing.T) {
 			Created: time.Now(),
 		})
 
-		if err != bolthold.ErrKeyExists {
-			t.Fatalf("Insert didn't fail! Expected %s got %s", bolthold.ErrKeyExists, err)
+		if err != ErrKeyExists {
+			t.Fatalf("Insert didn't fail! Expected %s got %s", ErrKeyExists, err)
 		}
 
 	})
 }
 
 func TestInsertReadTxn(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -72,7 +70,7 @@ func TestInsertReadTxn(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -81,8 +79,8 @@ func TestUpdate(t *testing.T) {
 		}
 
 		err := store.Update(key, data)
-		if err != bolthold.ErrNotFound {
-			t.Fatalf("Update without insert didn't fail! Expected %s got %s", bolthold.ErrNotFound, err)
+		if err != ErrNotFound {
+			t.Fatalf("Update without insert didn't fail! Expected %s got %s", ErrNotFound, err)
 		}
 
 		err = store.Insert(key, data)
@@ -127,7 +125,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUpdateReadTxn(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -147,7 +145,7 @@ func TestUpdateReadTxn(t *testing.T) {
 }
 
 func TestUpsert(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -196,7 +194,7 @@ func TestUpsert(t *testing.T) {
 }
 
 func TestUpsertReadTxn(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -218,7 +216,7 @@ func TestUpsertReadTxn(t *testing.T) {
 func TestUpdateMatching(t *testing.T) {
 	for _, tst := range testResults {
 		t.Run(tst.name, func(t *testing.T) {
-			testWrap(t, func(store *bolthold.Store, t *testing.T) {
+			testWrap(t, func(store *Store, t *testing.T) {
 
 				insertTestData(t, store)
 
@@ -239,7 +237,7 @@ func TestUpdateMatching(t *testing.T) {
 				}
 
 				var result []ItemTest
-				err = store.Find(&result, bolthold.Where("UpdateIndex").Eq("updated index").And("UpdateField").Eq("updated"))
+				err = store.Find(&result, Where("UpdateIndex").Eq("updated index").And("UpdateField").Eq("updated"))
 				if err != nil {
 					t.Fatalf("Error finding result after update from bolthold: %s", err)
 				}
@@ -280,7 +278,7 @@ func TestUpdateMatching(t *testing.T) {
 }
 
 func TestIssue14(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -306,7 +304,7 @@ func TestIssue14(t *testing.T) {
 
 		var result []ItemTest
 		// try to find the record on the old index value
-		err = store.Find(&result, bolthold.Where("Category").Eq("Test Category"))
+		err = store.Find(&result, Where("Category").Eq("Test Category"))
 		if err != nil {
 			t.Fatalf("Error retrieving query result for TestIssue14: %s", err)
 		}
@@ -319,7 +317,7 @@ func TestIssue14(t *testing.T) {
 }
 
 func TestIssue14Upsert(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -345,7 +343,7 @@ func TestIssue14Upsert(t *testing.T) {
 
 		var result []ItemTest
 		// try to find the record on the old index value
-		err = store.Find(&result, bolthold.Where("Category").Eq("Test Category"))
+		err = store.Find(&result, Where("Category").Eq("Test Category"))
 		if err != nil {
 			t.Fatalf("Error retrieving query result for TestIssue14: %s", err)
 		}
@@ -358,7 +356,7 @@ func TestIssue14Upsert(t *testing.T) {
 }
 
 func TestIssue14UpdateMatching(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:     "Test Name",
@@ -370,7 +368,7 @@ func TestIssue14UpdateMatching(t *testing.T) {
 			t.Fatalf("Error creating data for update test: %s", err)
 		}
 
-		err = store.UpdateMatching(&ItemTest{}, bolthold.Where("Name").Eq("Test Name"),
+		err = store.UpdateMatching(&ItemTest{}, Where("Name").Eq("Test Name"),
 			func(record interface{}) error {
 				update, ok := record.(*ItemTest)
 				if !ok {
@@ -388,7 +386,7 @@ func TestIssue14UpdateMatching(t *testing.T) {
 
 		var result []ItemTest
 		// try to find the record on the old index value
-		err = store.Find(&result, bolthold.Where("Category").Eq("Test Category"))
+		err = store.Find(&result, Where("Category").Eq("Test Category"))
 		if err != nil {
 			t.Fatalf("Error retrieving query result for TestIssue14: %s", err)
 		}
@@ -401,14 +399,14 @@ func TestIssue14UpdateMatching(t *testing.T) {
 }
 
 func TestInsertSequence(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 
 		type SequenceTest struct {
 			Key uint64 `boltholdKey:"Key"`
 		}
 
 		for i := 0; i < 10; i++ {
-			err := store.Insert(bolthold.NextSequence(), &SequenceTest{})
+			err := store.Insert(NextSequence(), &SequenceTest{})
 			if err != nil {
 				t.Fatalf("Error inserting data for sequence test: %s", err)
 			}
@@ -432,12 +430,12 @@ func TestInsertSequence(t *testing.T) {
 }
 
 func TestInsertSequenceSetKey(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 
 		// Properly tagged, passed by reference, and the field is the same type
 		// as bucket.NextSequence() produces
 		type InsertSequenceSetKeyTest struct {
-			// bolthold.NextSequence() creates an auto-key that is a uint64
+			// NextSequence() creates an auto-key that is a uint64
 			Key uint64 `boltholdKey:"Key"`
 		}
 
@@ -447,7 +445,7 @@ func TestInsertSequenceSetKey(t *testing.T) {
 			if st.Key != 0 {
 				t.Fatalf("Zero value of test data should be 0")
 			}
-			err := store.Insert(bolthold.NextSequence(), &st)
+			err := store.Insert(NextSequence(), &st)
 			if err != nil {
 				t.Fatalf("Error inserting data for sequence test: %s", err)
 			}
@@ -459,7 +457,7 @@ func TestInsertSequenceSetKey(t *testing.T) {
 }
 
 func TestInsertSetKey(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 
 		type TestInsertSetKey struct {
 			Key uint `boltholdKey:"Key"`

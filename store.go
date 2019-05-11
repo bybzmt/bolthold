@@ -5,11 +5,10 @@
 package bolthold
 
 import (
+	"github.com/boltdb/bolt"
 	"os"
 	"reflect"
 	"strings"
-
-	bolt "go.etcd.io/bbolt"
 )
 
 // Store is a bolthold wrapper around a bolt DB

@@ -6,8 +6,7 @@ package bolthold
 
 import (
 	"errors"
-
-	bolt "go.etcd.io/bbolt"
+	"github.com/boltdb/bolt"
 )
 
 // ErrNotFound is returned when no data is found for the given key

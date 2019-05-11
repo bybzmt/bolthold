@@ -2,7 +2,7 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-package bolthold_test
+package bolthold
 
 import (
 	"encoding/binary"
@@ -10,8 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/timshannon/bolthold"
-	bolt "go.etcd.io/bbolt"
+	"github.com/boltdb/bolt"
 )
 
 type BenchData struct {
@@ -36,9 +35,9 @@ var benchItemIndexed = BenchData{
 
 // benchWrap creates a temporary database for testing and closes and cleans it up when
 // completed.
-func benchWrap(b *testing.B, options *bolthold.Options, bench func(store *bolthold.Store, b *testing.B)) {
+func benchWrap(b *testing.B, options *Options, bench func(store *Store, b *testing.B)) {
 	filename := tempfile()
-	store, err := bolthold.Open(filename, 0666, options)
+	store, err := Open(filename, 0666, options)
 	if err != nil {
 		b.Fatalf("Error opening %s: %s", filename, err)
 	}
@@ -63,12 +62,12 @@ func id() []byte {
 }
 
 func BenchmarkRawInsert(b *testing.B) {
-	data, err := bolthold.DefaultEncode(benchItem)
+	data, err := DefaultEncode(benchItem)
 	if err != nil {
 		b.Fatalf("Error encoding data for raw benchmarking: %s", err)
 	}
 
-	benchWrap(b, nil, func(store *bolthold.Store, b *testing.B) {
+	benchWrap(b, nil, func(store *Store, b *testing.B) {
 		bucket := []byte("test bucket")
 
 		err = store.Bolt().Update(func(tx *bolt.Tx) error {
@@ -94,7 +93,7 @@ func BenchmarkRawInsert(b *testing.B) {
 }
 
 func BenchmarkNoIndexInsert(b *testing.B) {
-	benchWrap(b, nil, func(store *bolthold.Store, b *testing.B) {
+	benchWrap(b, nil, func(store *Store, b *testing.B) {
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
@@ -107,7 +106,7 @@ func BenchmarkNoIndexInsert(b *testing.B) {
 }
 
 func BenchmarkIndexedInsert(b *testing.B) {
-	benchWrap(b, nil, func(store *bolthold.Store, b *testing.B) {
+	benchWrap(b, nil, func(store *Store, b *testing.B) {
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
@@ -120,7 +119,7 @@ func BenchmarkIndexedInsert(b *testing.B) {
 }
 
 func BenchmarkNoIndexUpsert(b *testing.B) {
-	benchWrap(b, nil, func(store *bolthold.Store, b *testing.B) {
+	benchWrap(b, nil, func(store *Store, b *testing.B) {
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
@@ -133,7 +132,7 @@ func BenchmarkNoIndexUpsert(b *testing.B) {
 }
 
 func BenchmarkIndexedUpsert(b *testing.B) {
-	benchWrap(b, nil, func(store *bolthold.Store, b *testing.B) {
+	benchWrap(b, nil, func(store *Store, b *testing.B) {
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
@@ -146,10 +145,10 @@ func BenchmarkIndexedUpsert(b *testing.B) {
 }
 
 func BenchmarkNoIndexInsertJSON(b *testing.B) {
-	benchWrap(b, &bolthold.Options{
+	benchWrap(b, &Options{
 		Encoder: json.Marshal,
 		Decoder: json.Unmarshal,
-	}, func(store *bolthold.Store, b *testing.B) {
+	}, func(store *Store, b *testing.B) {
 		b.ResetTimer()
 
 		for i := 0; i < b.N; i++ {
@@ -162,7 +161,7 @@ func BenchmarkNoIndexInsertJSON(b *testing.B) {
 }
 
 func BenchmarkFindNoIndex(b *testing.B) {
-	benchWrap(b, nil, func(store *bolthold.Store, b *testing.B) {
+	benchWrap(b, nil, func(store *Store, b *testing.B) {
 		for i := 0; i < 3; i++ {
 			for k := 0; k < 100; k++ {
 				err := store.Insert(id(), benchItem)
@@ -185,7 +184,7 @@ func BenchmarkFindNoIndex(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			var result []BenchData
 
-			err := store.Find(&result, bolthold.Where("Category").Eq("findCategory"))
+			err := store.Find(&result, Where("Category").Eq("findCategory"))
 			if err != nil {
 				b.Fatalf("Error finding data in store: %s", err)
 			}
@@ -194,7 +193,7 @@ func BenchmarkFindNoIndex(b *testing.B) {
 }
 
 func BenchmarkFindIndexed(b *testing.B) {
-	benchWrap(b, nil, func(store *bolthold.Store, b *testing.B) {
+	benchWrap(b, nil, func(store *Store, b *testing.B) {
 		for i := 0; i < 3; i++ {
 			for k := 0; k < 100; k++ {
 				err := store.Insert(id(), benchItemIndexed)
@@ -217,7 +216,7 @@ func BenchmarkFindIndexed(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			var result []BenchDataIndexed
 
-			err := store.Find(&result, bolthold.Where("Category").Eq("findCategory"))
+			err := store.Find(&result, Where("Category").Eq("findCategory"))
 			if err != nil {
 				b.Fatalf("Error finding data in store: %s", err)
 			}

@@ -6,10 +6,9 @@ package bolthold
 
 import (
 	"fmt"
+	"github.com/boltdb/bolt"
 	"reflect"
 	"sort"
-
-	bolt "go.etcd.io/bbolt"
 )
 
 // AggregateResult allows you to access the results of an aggregate query

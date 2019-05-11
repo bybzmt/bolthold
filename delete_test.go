@@ -2,18 +2,16 @@
 // Use of this source code is governed by the MIT license
 // that can be found in the LICENSE file.
 
-package bolthold_test
+package bolthold
 
 import (
+	"github.com/boltdb/bolt"
 	"testing"
 	"time"
-
-	"github.com/timshannon/bolthold"
-	bolt "go.etcd.io/bbolt"
 )
 
 func TestDelete(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:    "Test Name",
@@ -33,7 +31,7 @@ func TestDelete(t *testing.T) {
 		}
 
 		err = store.Get(key, result)
-		if err != bolthold.ErrNotFound {
+		if err != ErrNotFound {
 			t.Fatalf("Data was not deleted from bolthold")
 		}
 
@@ -43,7 +41,7 @@ func TestDelete(t *testing.T) {
 func TestDeleteMatching(t *testing.T) {
 	for _, tst := range testResults {
 		t.Run(tst.name, func(t *testing.T) {
-			testWrap(t, func(store *bolthold.Store, t *testing.T) {
+			testWrap(t, func(store *Store, t *testing.T) {
 
 				insertTestData(t, store)
 
@@ -92,10 +90,10 @@ func TestDeleteMatching(t *testing.T) {
 }
 
 func TestDeleteOnUnknownType(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		insertTestData(t, store)
 		var x BadType
-		err := store.DeleteMatching(x, bolthold.Where("BadName").Eq("blah"))
+		err := store.DeleteMatching(x, Where("BadName").Eq("blah"))
 		if err != nil {
 			t.Fatalf("Error finding data from bolthold: %s", err)
 		}
@@ -113,23 +111,23 @@ func TestDeleteOnUnknownType(t *testing.T) {
 }
 
 func TestDeleteWithNilValue(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		insertTestData(t, store)
 
 		var result ItemTest
-		err := store.DeleteMatching(&result, bolthold.Where("Name").Eq(nil))
+		err := store.DeleteMatching(&result, Where("Name").Eq(nil))
 		if err == nil {
 			t.Fatalf("Comparing with nil did NOT return an error!")
 		}
 
-		if _, ok := err.(*bolthold.ErrTypeMismatch); !ok {
+		if _, ok := err.(*ErrTypeMismatch); !ok {
 			t.Fatalf("Comparing with nil did NOT return the correct error.  Got %v", err)
 		}
 	})
 }
 
 func TestDeleteReadTxn(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:    "Test Name",
@@ -148,7 +146,7 @@ func TestDeleteReadTxn(t *testing.T) {
 }
 
 func TestDeleteNotFound(t *testing.T) {
-	testWrap(t, func(store *bolthold.Store, t *testing.T) {
+	testWrap(t, func(store *Store, t *testing.T) {
 		key := "testKey"
 		data := &ItemTest{
 			Name:    "Test Name",
@@ -161,9 +159,9 @@ func TestDeleteNotFound(t *testing.T) {
 			t.Fatalf("Deleting with an unfound key did not return an error")
 		}
 
-		if err != bolthold.ErrNotFound {
+		if err != ErrNotFound {
 			t.Fatalf("Deleting with an unfound key did not return the correct error.  Wanted %s, got %s",
-				bolthold.ErrNotFound, err)
+				ErrNotFound, err)
 		}
 
 	})
