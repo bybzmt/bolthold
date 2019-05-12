@@ -20,7 +20,7 @@ type BenchData struct {
 
 type BenchDataIndexed struct {
 	ID       int
-	Category string `boltholdIndex:"Category"`
+	Category string `bolthold:"index"`
 }
 
 var benchItem = BenchData{

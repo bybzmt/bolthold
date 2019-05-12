@@ -26,12 +26,12 @@ your query criteria if you create an index on the Division field.  The downside 
 on every write operation.  For read heavy operations datasets, indexes can be very useful.
 
 In every BoltHold store, there will be a reserved bucket *_indexes* which will be used to hold indexes that point back
-to another bucket's Key system.  Indexes will be defined by setting the `boltholdIndex` struct tag on a field in a type.
+to another bucket's Key system.  Indexes will be defined by setting the `bolthold:"index"` struct tag on a field in a type.
 
 ```Go
 type Person struct {
 	Name string
-	Division string `boltholdIndex:"Division"`
+	Division string `bolthold:"index"`
 }
 
 ```
@@ -141,16 +141,16 @@ store.UpdateMatching(&Person{}, bolthold.Where("Death").Lt(bolthold.Field("Birth
 ### Keys in Structs
 
 A common scenario is to store the bolthold Key in the same struct that is stored in the boltDB value.  You can
-automatically populate a record's Key in a struct by using the `boltholdKey` struct tag when running `Find` queries.
+automatically populate a record's Key in a struct by using the `bolthold:"key"` struct tag when running `Find` queries.
 
 Another common scenario is to insert data with an auto-incrementing key assigned by the database.
-When performing an `Insert`, if the type of the key matches the type of the `boltholdKey` tagged field,
+When performing an `Insert`, if the type of the key matches the type of the `bolthold:"key"` tagged field,
 the data is passed in by reference, **and** the field's current value is the zero-value for that type,
 then it is set on the data _before_ insertion.
 
 ```Go
 type Employee struct {
-	ID string `boltholdKey:"ID"`  // the tagName isn't required, but some linters will complain without it
+	ID string `bolthold:"key"`  // the tagName isn't required, but some linters will complain without it
 	FirstName string
 	LastName string
 	Division string
@@ -168,7 +168,7 @@ err := store.Insert(bolthold.NextSequence(), data)
 The key value will be a `uint64`.
 
 If you want to know the value of the auto-incrementing Key that was generated using `bolthold.NextSequence()`,
-then make sure to pass your data by value and that the `boltholdKey` tagged field is of type `uint64`.
+then make sure to pass your data by value and that the `bolthold:"key"` tagged field is of type `uint64`.
 
 ```Go
 err := store.Insert(bolthold.NextSequence(), &data)

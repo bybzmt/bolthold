@@ -402,7 +402,7 @@ func TestInsertSequence(t *testing.T) {
 	testWrap(t, func(store *Store, t *testing.T) {
 
 		type SequenceTest struct {
-			Key uint64 `boltholdKey:"Key"`
+			Key uint64 `bolthold:"key"`
 		}
 
 		for i := 0; i < 10; i++ {
@@ -436,7 +436,7 @@ func TestInsertSequenceSetKey(t *testing.T) {
 		// as bucket.NextSequence() produces
 		type InsertSequenceSetKeyTest struct {
 			// NextSequence() creates an auto-key that is a uint64
-			Key uint64 `boltholdKey:"Key"`
+			Key uint64 `bolthold:"key"`
 		}
 
 		for i := 0; i < 10; i++ {
@@ -460,7 +460,7 @@ func TestInsertSetKey(t *testing.T) {
 	testWrap(t, func(store *Store, t *testing.T) {
 
 		type TestInsertSetKey struct {
-			Key uint `boltholdKey:"Key"`
+			Key uint `bolthold:"key"`
 		}
 
 		t.Run("Valid", func(t *testing.T) {

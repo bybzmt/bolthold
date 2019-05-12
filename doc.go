@@ -21,12 +21,12 @@ different types into the same DB file and they (and their indexes) will be store
 
 Indexes
 
-BoltHold will automatically create an index for any struct fields tags with "boltholdIndex"
+BoltHold will automatically create an index for any struct fields tags with `bolthold:"index"`
 
 	type Item struct {
 		ID       int
 		Name     string
-		Category string `boltholdIndex:"Category"`
+		Category string `bolthold:"index"`
 		Created  time.Time
 	}
 

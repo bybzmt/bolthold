@@ -16,13 +16,13 @@ type ItemTest struct {
 	Key         int
 	ID          int
 	Name        string
-	Category    string `boltholdIndex:"Category"`
+	Category    string `bolthold:"index"`
 	Created     time.Time
 	Tags        []string
 	Color       string
 	Fruit       string
 	UpdateField string
-	UpdateIndex string `boltholdIndex:"UpdateIndex"`
+	UpdateIndex string `bolthold:"index"`
 }
 
 func (i *ItemTest) equal(other *ItemTest) bool {
@@ -870,7 +870,7 @@ func TestKeyMatchFunc(t *testing.T) {
 func TestKeyStructTag(t *testing.T) {
 	testWrap(t, func(store *Store, t *testing.T) {
 		type KeyTest struct {
-			Key   int `boltholdKey:"Key"`
+			Key   int `bolthold:"key"`
 			Value string
 		}
 
@@ -901,7 +901,7 @@ func TestKeyStructTag(t *testing.T) {
 func TestKeyStructTagIntoPtr(t *testing.T) {
 	testWrap(t, func(store *Store, t *testing.T) {
 		type KeyTest struct {
-			Key   *int `boltholdKey:"Key"`
+			Key   *int `bolthold:"key"`
 			Value string
 		}
 
@@ -946,7 +946,7 @@ func TestNestedStructPointer(t *testing.T) {
 	}
 
 	type device struct {
-		ID            string `boltholdKey:"ID"`
+		ID            string `bolthold:"key"`
 		Notifications *notification
 	}
 

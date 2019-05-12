@@ -131,21 +131,30 @@ func (s *Store) RemoveIndex(dataType interface{}, indexName string) error {
 	})
 }
 
+// BoltholdTag is the struct tag used to define an a field as a key or index
+const BoltholdTag = "bolthold"
+
 // Storer is the Interface to implement to skip reflect calls on all data passed into the bolthold
 type Storer interface {
 	Type() string              // used as the boltdb bucket name
+	Key() string               // used as the bolthold NextSequence
 	Indexes() map[string]Index //[indexname]indexFunc
 }
 
 // anonType is created from a reflection of an unknown interface
 type anonStorer struct {
 	rType   reflect.Type
+	key     string
 	indexes map[string]Index
 }
 
 // Type returns the name of the type as determined from the reflect package
 func (t *anonStorer) Type() string {
 	return t.rType.Name()
+}
+
+func (t *anonStorer) Key() string {
+	return t.key
 }
 
 // Indexes returns the Indexes determined by the reflect package on this type
@@ -183,20 +192,21 @@ func newStorer(dataType interface{}) Storer {
 	}
 
 	for i := 0; i < storer.rType.NumField(); i++ {
-		if strings.Contains(string(storer.rType.Field(i).Tag), BoltholdIndexTag) {
-			indexName := storer.rType.Field(i).Tag.Get(BoltholdIndexTag)
+		if tag := storer.rType.Field(i).Tag.Get(BoltholdTag); tag != "" {
+			tag = strings.ToLower(tag)
+			switch tag {
+			case "key":
+				storer.key = storer.rType.Field(i).Name
+			case "index":
+				indexName := storer.rType.Field(i).Name
+				storer.indexes[indexName] = func(name string, value interface{}) ([]byte, error) {
+					tp := reflect.ValueOf(value)
+					for tp.Kind() == reflect.Ptr {
+						tp = tp.Elem()
+					}
 
-			if indexName != "" {
-				indexName = storer.rType.Field(i).Name
-			}
-
-			storer.indexes[indexName] = func(name string, value interface{}) ([]byte, error) {
-				tp := reflect.ValueOf(value)
-				for tp.Kind() == reflect.Ptr {
-					tp = tp.Elem()
+					return encode(tp.FieldByName(name).Interface())
 				}
-
-				return encode(tp.FieldByName(name).Interface())
 			}
 		}
 	}

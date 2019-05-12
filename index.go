@@ -11,9 +11,6 @@ import (
 	"sort"
 )
 
-// BoltholdIndexTag is the struct tag used to define an a field as indexable for a bolthold
-const BoltholdIndexTag = "boltholdIndex"
-
 const indexBucketPrefix = "_index"
 
 // size of iterator keys stored in memory before more are fetched

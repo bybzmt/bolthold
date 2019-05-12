@@ -14,7 +14,7 @@ import (
 
 type Item struct {
 	ID       int
-	Category string `boltholdIndex:"Category"`
+	Category string `bolthold:"index"`
 	Created  time.Time
 }
 

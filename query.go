@@ -31,9 +31,6 @@ const (
 // Where(bolthold.Key).Eq("testkey")
 const Key = ""
 
-// BoltholdKeyTag is the struct tag used to define an a field as a key for use in a Find query
-const BoltholdKeyTag = "boltholdKey"
-
 // Query is a chained collection of criteria of which an object in the bolthold needs to match to be returned
 // an empty query matches against all records
 type Query struct {
@@ -760,18 +757,10 @@ func findQuery(tx *bolt.Tx, result interface{}, query *Query) error {
 		tp = tp.Elem()
 	}
 
-	var keyType reflect.Type
-	var keyField string
-
-	for i := 0; i < tp.NumField(); i++ {
-		if strings.Contains(string(tp.Field(i).Tag), BoltholdKeyTag) {
-			keyType = tp.Field(i).Type
-			keyField = tp.Field(i).Name
-			break
-		}
-	}
-
 	val := reflect.New(tp)
+
+	storer := newStorer(val.Interface())
+	keyField := storer.Key()
 
 	err := runQuery(tx, val.Interface(), query, nil, query.skip,
 		func(r *record) error {
@@ -784,7 +773,7 @@ func findQuery(tx *bolt.Tx, result interface{}, query *Query) error {
 				rowValue = r.value.Elem()
 			}
 
-			if keyType != nil {
+			if keyField != "" {
 				rowKey := rowValue
 				for rowKey.Kind() == reflect.Ptr {
 					rowKey = rowKey.Elem()

@@ -26,7 +26,7 @@ func NextSequence() interface{} {
 // Insert inserts the passed in data into the the bolthold
 //
 // If the the key already exists in the bolthold, then an ErrKeyExists is returned
-// If the data struct has a field tagged as `boltholdKey` and it is the same type
+// If the data struct has a field tagged as `bolthold:"key"` and it is the same type
 // as the Insert key, AND the data struct is passed by reference, AND the key field
 // is currently set to the zero-value for that type, then that field will be set to
 // the value of the insert key.
@@ -86,30 +86,19 @@ func (s *Store) TxInsert(tx *bolt.Tx, key, data interface{}) error {
 		return err
 	}
 
-	dataVal := reflect.Indirect(reflect.ValueOf(data))
-	if !dataVal.CanSet() {
-		return nil
-	}
-	dataType := dataVal.Type()
+	if storer.Key() != "" {
+		dataVal := reflect.Indirect(reflect.ValueOf(data))
+		if !dataVal.CanSet() {
+			return nil
+		}
 
-	for i := 0; i < dataType.NumField(); i++ {
-		tf := dataType.Field(i)
-		// XXX: should we require standard tag format so we can use StructTag.Lookup()?
-		// XXX: should we use strings.Contains(string(tf.Tag), BoltholdKeyTag) so we don't require proper tags?
-		if _, ok := tf.Tag.Lookup(BoltholdKeyTag); ok {
-			fieldValue := dataVal.Field(i)
-			keyValue := reflect.ValueOf(key)
-			if keyValue.Type() != tf.Type {
-				break
-			}
-			if !fieldValue.CanSet() {
-				break
-			}
-			if !reflect.DeepEqual(fieldValue.Interface(), reflect.Zero(tf.Type).Interface()) {
-				break
-			}
+		fieldValue := dataVal.FieldByName(storer.Key())
+		keyValue := reflect.ValueOf(key)
+
+		if (keyValue.Type() == fieldValue.Type()) &&
+			fieldValue.CanSet() &&
+			reflect.DeepEqual(fieldValue.Interface(), reflect.Zero(fieldValue.Type()).Interface()) {
 			fieldValue.Set(keyValue)
-			break
 		}
 	}
 
