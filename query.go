@@ -759,9 +759,6 @@ func findQuery(tx *bolt.Tx, result interface{}, query *Query) error {
 
 	val := reflect.New(tp)
 
-	storer := newStorer(val.Interface())
-	keyField := storer.Key()
-
 	err := runQuery(tx, val.Interface(), query, nil, query.skip,
 		func(r *record) error {
 			var rowValue reflect.Value
@@ -771,17 +768,6 @@ func findQuery(tx *bolt.Tx, result interface{}, query *Query) error {
 				rowValue = r.value
 			} else {
 				rowValue = r.value.Elem()
-			}
-
-			if keyField != "" {
-				rowKey := rowValue
-				for rowKey.Kind() == reflect.Ptr {
-					rowKey = rowKey.Elem()
-				}
-				err := decode(r.key, rowKey.FieldByName(keyField).Addr().Interface())
-				if err != nil {
-					return err
-				}
 			}
 
 			sliceVal = reflect.Append(sliceVal, rowValue)

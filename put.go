@@ -56,6 +56,20 @@ func (s *Store) TxInsert(tx *bolt.Tx, key, data interface{}) error {
 		if err != nil {
 			return err
 		}
+
+		if storer.Key() != "" {
+			dataVal := reflect.Indirect(reflect.ValueOf(data))
+			if dataVal.CanSet() {
+				fieldValue := dataVal.FieldByName(storer.Key())
+				keyValue := reflect.ValueOf(key)
+
+				if (keyValue.Type() == fieldValue.Type()) &&
+					fieldValue.CanSet() &&
+					reflect.DeepEqual(fieldValue.Interface(), reflect.Zero(fieldValue.Type()).Interface()) {
+					fieldValue.Set(keyValue)
+				}
+			}
+		}
 	}
 
 	gk, err := encode(key)
@@ -84,22 +98,6 @@ func (s *Store) TxInsert(tx *bolt.Tx, key, data interface{}) error {
 	err = indexAdd(storer, tx, gk, data)
 	if err != nil {
 		return err
-	}
-
-	if storer.Key() != "" {
-		dataVal := reflect.Indirect(reflect.ValueOf(data))
-		if !dataVal.CanSet() {
-			return nil
-		}
-
-		fieldValue := dataVal.FieldByName(storer.Key())
-		keyValue := reflect.ValueOf(key)
-
-		if (keyValue.Type() == fieldValue.Type()) &&
-			fieldValue.CanSet() &&
-			reflect.DeepEqual(fieldValue.Interface(), reflect.Zero(fieldValue.Type()).Interface()) {
-			fieldValue.Set(keyValue)
-		}
 	}
 
 	return nil
